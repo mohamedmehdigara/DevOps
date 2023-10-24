@@ -25,28 +25,27 @@ const availableIngredients = [
 const App = () => {
   const [selectedIngredients, setSelectedIngredients] = useState([]);
   const [cookingStatus, setCookingStatus] = useState(false);
+  const [cookingProgress, setCookingProgress] = useState(0);
 
   useEffect(() => {
-    // Simulate cooking effect when cookingStatus changes
-    if (cookingStatus) {
-      const interval = setInterval(() => {
-        // Implement cooking logic here
-        // For simplicity, let's just change the dish image after 2 seconds
-        setTimeout(() => {
-          setCookingStatus(false);
-          // Update the dish with the cooked result image
-          // Replace 'cooked-dish.png' with the actual image file
-          // You can also modify this logic to suit your cooking simulation
-          // e.g., adjust the appearance of the dish over time
-          setDishImage('cooked-dish.png');
-        }, 2000);
-      }, 1000);
+    let interval;
 
-      return () => {
-        clearInterval(interval);
-      };
+    if (cookingStatus) {
+      interval = setInterval(() => {
+        if (cookingProgress < 100) {
+          setCookingProgress(cookingProgress + 10); // Adjust cooking progress as needed
+        } else {
+          setCookingStatus(false);
+          clearInterval(interval);
+          setDishImage('cooked-dish.png'); // Update the dish with the cooked image
+        }
+      }, 1000); // Adjust the cooking interval as needed
     }
-  }, [cookingStatus]);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [cookingStatus, cookingProgress]);
 
   const [dishImage, setDishImage] = useState('raw-dish.png'); // Initial dish image
 
@@ -55,7 +54,9 @@ const App = () => {
   };
 
   const handleStartCooking = () => {
-    setCookingStatus(true);
+    if (selectedIngredients.length > 0) {
+      setCookingStatus(true);
+    }
   };
 
   const handleStopCooking = () => {
@@ -66,14 +67,21 @@ const App = () => {
     setCookingStatus(false);
     setDishImage('raw-dish.png'); // Reset the dish image
     setSelectedIngredients([]); // Clear selected ingredients
+    setCookingProgress(0); // Reset the cooking progress
   };
 
   return (
     <AppContainer>
       <h1>Cooking Simulator</h1>
-      <Dish dishImage={dishImage} />
+      <Dish dishImage={dishImage} cookingProgress={cookingProgress} />
       <Ingredients availableIngredients={availableIngredients} onSelectIngredient={handleSelectIngredient} />
-      <CookingControls onStartCooking={handleStartCooking} onStopCooking={handleStopCooking} onResetCooking={handleResetCooking} />
+      <CookingControls
+        onStartCooking={handleStartCooking}
+        onStopCooking={handleStopCooking}
+        onResetCooking={handleResetCooking}
+        selectedIngredients={selectedIngredients}
+        cookingStatus={cookingStatus}
+      />
     </AppContainer>
   );
 };
